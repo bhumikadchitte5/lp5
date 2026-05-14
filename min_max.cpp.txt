@@ -1,0 +1,71 @@
+#include <iostream>
+#include <omp.h>
+
+using namespace std;
+
+int main()
+{
+    // Set number of threads
+    omp_set_num_threads(4);
+
+    // Array declaration
+    double arr[10] = {1,2,3,4,5,6,7,8,9,10};
+
+    // Variables
+    double max_val = 0.0;
+    double min_val = 100.0;
+    double sum = 0.0;
+    double avg = 0.0;
+
+    // ---------------- MINIMUM VALUE ----------------
+    #pragma omp parallel for reduction(min:min_val)
+    for(int i = 0; i < 10; i++)
+    {
+        cout << "Thread ID = " << omp_get_thread_num()
+             << " and i = " << i << endl;
+
+        if(arr[i] < min_val)
+        {
+            min_val = arr[i];
+        }
+    }
+
+    cout << "\nMinimum Value = " << min_val << endl;
+    cout << endl;
+
+    // ---------------- MAXIMUM VALUE ----------------
+    #pragma omp parallel for reduction(max:max_val)
+    for(int i = 0; i < 10; i++)
+    {
+        cout << "Thread ID = " << omp_get_thread_num()
+             << " and i = " << i << endl;
+
+        if(arr[i] > max_val)
+        {
+            max_val = arr[i];
+        }
+    }
+
+    cout << "\nMaximum Value = " << max_val << endl;
+    cout << endl;
+
+    // ---------------- SUM ----------------
+    #pragma omp parallel for reduction(+:sum)
+    for(int i = 0; i < 10; i++)
+    {
+        cout << "Thread ID = " << omp_get_thread_num()
+             << " and i = " << i << endl;
+
+        sum += arr[i];
+    }
+
+    cout << "\nSum = " << sum << endl;
+    cout << endl;
+
+    // ---------------- AVERAGE ----------------
+    avg = sum / 10;
+
+    cout << "Average = " << avg << endl;
+
+    return 0;
+}

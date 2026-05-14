@@ -1,0 +1,97 @@
+#include <iostream>
+#include <omp.h>
+
+using namespace std;
+
+int graph[10][10], visited[10];
+int queueArr[10];
+
+void parallelBFS(int start, int vertices)
+{
+    int front = 0, rear = 0;
+
+    // Insert starting node
+    queueArr[rear++] = start;
+    visited[start] = 1;
+
+    cout << "\nBFS Traversal: ";
+
+    double start_time = omp_get_wtime();
+
+    while (front < rear)
+    {
+        // Remove node from queue
+        int current = queueArr[front++];
+
+        // Print current node
+        cout << current << " ";
+
+        // Check all adjacent vertices in parallel
+        #pragma omp parallel for
+        for (int i = 0; i < vertices; i++)
+        {
+            if (graph[current][i] == 1 && visited[i] == 0)
+            {
+                #pragma omp critical
+                {
+                    if (visited[i] == 0)
+                    {
+                        visited[i] = 1;
+                        queueArr[rear++] = i;
+                    }
+                }
+            }
+        }
+    }
+
+    double end_time = omp_get_wtime();
+
+    cout << "\nTime Taken: "
+         << end_time - start_time << " seconds\n";
+}
+
+int main()
+{
+    int vertices, edges;
+
+    omp_set_num_threads(4);
+
+    cout << "Enter number of vertices: ";
+    cin >> vertices;
+
+    cout << "Enter number of edges: ";
+    cin >> edges;
+
+    // Initialize graph with 0
+    for (int i = 0; i < vertices; i++)
+    {
+        visited[i] = 0;
+
+        for (int j = 0; j < vertices; j++)
+        {
+            graph[i][j] = 0;
+        }
+    }
+
+    cout << "Enter edges (source destination):\n";
+
+    for (int i = 0; i < edges; i++)
+    {
+        int u, v;
+        cin >> u >> v;
+
+        graph[u][v] = 1;
+    }
+
+    // BFS Traversal
+    for (int i = 0; i < vertices; i++)
+    {
+        if (visited[i] == 0)
+        {
+            parallelBFS(i, vertices);
+        }
+    }
+
+    return 0;
+}
+
